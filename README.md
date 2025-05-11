@@ -64,6 +64,11 @@ sudo systemctl restart docker
 ```bash
 bash -i <(curl -s https://install.aztec.network)
 ```
+```bash
+echo 'export PATH="$HOME/.aztec/bin:$PATH"' >> ~/.bashrc
+
+source ~/.bashrc
+```
 * **Restart your Terminal** now to apply changes.
 * Check if you installed successfully:
 ```bash
@@ -77,12 +82,12 @@ aztec-up alpha-testnet
 
 ## 4. Obtain RPC URLs
 * Find a 3rd party that supports Sepolia `RPC URL` & Sepolia `BEACON URL` APIs.
-* Most of your usage is `RPC URL`. I recommend to use [Alchemy](https://dashboard.alchemy.com/) for `RPC URL` & Use [drpc](https://drpc.org/) for `Beacon URL`
+* Most of your usage is `RPC URL`. I recommend to use [Alchemy](https://dashboard.alchemy.com/) for `RPC URL` & Use [drpc](https://drpc.org?ref=2fd3ba) for `Beacon URL`
 * More details on Free & Paid 3rd party solutions:
 
 ### Free:
 * `RPC URL`: Create a Sepolia Ethereum HTTP API in [Alchemy](https://dashboard.alchemy.com/)
-* `BEACON RPC`: Create an account on [drpc](https://drpc.org/) and search for `Sepolia Ethereum Beacon Chain ` Endpoints.
+* `BEACON RPC`: Create an account on [drpc](https://drpc.org?ref=2fd3ba) and search for `Sepolia Ethereum Beacon Chain ` Endpoints.
 
 ![image](https://github.com/user-attachments/assets/eae865ab-461f-46cd-b3f9-b7d118dcbbdf)
 
@@ -94,6 +99,9 @@ For example: [Ankr](https://www.ankr.com/rpc/?utm_referral=LqL9Sv86Te) is suppor
 ![image](https://github.com/user-attachments/assets/ffb97518-cd24-46ee-b131-92b2870ac407)
 
 > You can run your own Geth & Prysm nodes to get your own `RPC URL` & `BEACON RPC` or find any other 3rd party solutions
+
+### Drpc (paid)
+> i'm using [drpc](https://drpc.org?ref=2fd3ba) paid version because its can pay any ammount i starting 6$-7$ 
 
 ## 5. Generate Ethereum Keys
 Get an EVM Wallet with `Private Key` and `Public Address` saved.
@@ -119,7 +127,7 @@ ufw allow 40400
 ufw allow 8080
 ```
 
-## 9. Sequencer Node
+## 9. Run Sequencer Node
 * Open screen
 ```bash
 screen -S aztec
@@ -199,8 +207,42 @@ Replace `RPC_URL`, `your-validator-address` & 2x `your-validator-address`, then 
 
 * Note that there's a daily quota of 10 validator registration per day, if you get error, try again tommorrow.
 
-## 13. Check Validator
-If your Validator Registration was successfull, you can check its stats in [Aztec Scan](https://aztecscan.xyz/validators)
+## 13. Node's Health
+### Node's Peer ID:
+**Find your Node's Peer ID:**
+```bash
+sudo docker logs $(docker ps -q --filter ancestor=aztecprotocol/aztec:alpha-testnet | head -n 1) 2>&1 | grep -i "peerId" | grep -o '"peerId":"[^"]*"' | cut -d'"' -f4 | head -n 1
+```
+* This reveals your Node's Peer ID, Now search it on [Nethermind Explorer](https://aztec.nethermind.io/)
+
+### Validator's Registration:
+If your Validator's Registration was successfull, you can check its stats on [Aztec Scan](https://aztecscan.xyz/validators)
+
+---
+
+## 🔃 Update Sequencer Node
+* 1- Stop Node:
+```console
+# Kill all Aztec docker containers
+docker stop $(docker ps -q --filter "ancestor=aztecprotocol/aztec") && docker rm $(docker ps -a -q --filter "ancestor=aztecprotocol/aztec")
+
+# Kill all Aztec screens
+screen -ls | grep -i aztec | awk '{print $1}' | xargs -I {} screen -X -S {} quit
+```
+
+* 2- Update Node:
+```bash
+aztec-up alpha-testnet
+```
+
+* 3- Delete old data:
+```bash
+rm -rf ~/.aztec/alpha-testnet/data/
+```
+
+* 4- Re-run Node
+
+Return to [Step 9: Run Sequencer Node](https://github.com/0xmoei/aztec-network/blob/main/README.md#9-run-sequencer-node) to re-run your node
 
 ---
 
